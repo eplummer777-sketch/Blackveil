@@ -8,7 +8,7 @@ import { ChatPanel } from '@/components/builder/ChatPanel';
 import { ChangeReview } from '@/components/builder/ChangeReview';
 import { HistoryDrawer } from '@/components/builder/HistoryDrawer';
 import { PublishDialog } from '@/components/builder/PublishDialog';
-import { BookOpen, Eye, EyeOff, Globe, History, Rocket } from 'lucide-react';
+import { BookOpen, Download, Eye, EyeOff, Globe, History, Rocket } from 'lucide-react';
 
 interface Attempt { text: string; mode?: WbWorkflow; repairOf?: string }
 
@@ -31,6 +31,7 @@ export function Workspace({ projectId, onAiSettings }: {
   const [writingId, setWritingId] = useState<string | null>(null);
   const [retry, setRetry] = useState<Attempt | null>(null);
   const [showMemory, setShowMemory] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const reload = useCallback(async () => {
     try {
@@ -177,6 +178,35 @@ export function Workspace({ projectId, onAiSettings }: {
     return err;
   }
 
+  async function exportProject() {
+    if (!window.confirm('Download all saved website files as JSON to this device? The file may contain sensitive content; keep it private.')) return;
+    setExporting(true);
+    setError(null);
+    try {
+      const exported = await wb<{
+        format: string;
+        name: string;
+        description: string;
+        kind: string;
+        files: Record<string, string>;
+      }>('export_project', { project_id: projectId });
+      const safeName = exported.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'website';
+      const url = URL.createObjectURL(new Blob([JSON.stringify(exported, null, 2)], { type: 'application/json' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${safeName}.json`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setExporting(false);
+    }
+  }
+
   if (!data) {
     return error ? <ErrorBanner message={error} />
       : <div className="flex items-center gap-2 text-sm text-slate-400"><Spinner /> Opening your website…</div>;
@@ -191,6 +221,9 @@ export function Workspace({ projectId, onAiSettings }: {
           <p className="text-[11px] text-slate-500">{data.publication ? 'Live' : 'Not published yet'}</p>
         </div>
         <div className="ml-auto flex flex-wrap gap-1.5">
+          <Button variant="ghost" size="sm" onClick={() => { void exportProject(); }} loading={exporting} title="Download all website files as JSON">
+            <Download size={14} /> Export JSON
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => setShowPreview(!showPreview)}>
             {showPreview ? <EyeOff size={14} /> : <Eye size={14} />} {showPreview ? 'Hide preview' : 'Preview'}
           </Button>
