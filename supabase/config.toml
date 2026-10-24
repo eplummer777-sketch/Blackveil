@@ -1,0 +1,85 @@
+project_id = "blackveil-ai"
+
+[functions.ai-assistant]
+verify_jwt = true
+
+[functions.website-assessment]
+verify_jwt = true
+
+[functions.stripe-checkout]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.stripe-portal]
+verify_jwt = true
+
+[functions.link-scanner]
+verify_jwt = true
+
+[functions.sentinel-manager]
+verify_jwt = true
+
+[functions.threat-analyst]
+verify_jwt = true
+
+[functions.architect]
+verify_jwt = true
+
+[functions.cloudflare-architect]
+verify_jwt = true
+
+[functions.assessment-engine]
+verify_jwt = true
+
+[functions.sentinel-ingest]
+verify_jwt = false
+
+[functions.endpoint-agent]
+verify_jwt = false
+
+[functions.endpoint-control]
+verify_jwt = true
+
+[functions.monitoring]
+verify_jwt = true
+
+[functions.alert-dispatch]
+verify_jwt = false
+
+[functions.assistant-actions]
+verify_jwt = true
+
+[functions.proof-of-breach]
+verify_jwt = true
+
+[functions.zap-scanner]
+verify_jwt = true
+
+[functions.network-scanner]
+verify_jwt = true
+
+[functions.nmap-agent]
+verify_jwt = false
+
+[functions.hostedscan]
+verify_jwt = true
+
+[functions.zap-instances]
+verify_jwt = true
+
+[functions.pentest-engine]
+verify_jwt = true
+
+[functions.bv-terminal]
+verify_jwt = true
+
+[functions.bv-worker]
+verify_jwt = false
+
+[functions.web-builder]
+verify_jwt = true
+
+[functions.web-publish]
+verify_jwt = false

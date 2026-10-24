@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-veil-950 text-slate-200 antialiased;
+    font-feature-settings: "ss01", "cv01", "cv03";
+  }
+  ::selection {
+    @apply bg-cyan-400/30 text-white;
+  }
+}
+
+@layer utilities {
+  .font-mono-tight { font-variant-numeric: tabular-nums; }
+  .glow-cyan { box-shadow: 0 0 0 1px rgba(34,211,238,.18), 0 0 24px -6px rgba(34,211,238,.45); }
+  .glow-red { box-shadow: 0 0 0 1px rgba(239,68,68,.22), 0 0 26px -6px rgba(239,68,68,.5); }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(148,163,184,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148,163,184,.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .radial-fade {
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(34,211,238,.10), transparent 60%);
+  }
+  .text-gradient {
+    @apply bg-gradient-to-r from-cyan-300 via-cyan-200 to-slate-200 bg-clip-text text-transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-slate-700/70 rounded; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(.9); opacity: .8; }
+  70% { transform: scale(1.4); opacity: 0; }
+  100% { opacity: 0; }
+}
+.pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1px solid currentColor;
+  animation: pulse-ring 2.4s cubic-bezier(.4,0,.6,1) infinite;
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(400%); }
+}
+.scanline { animation: scan 2.2s linear infinite; }
+@keyframes sweep-x {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.sweep-x { animation: sweep-x 1.6s ease-in-out infinite; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up .35s ease-out both; }
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.fade-in { animation: fade-in .2s ease-out both; }
+
+@keyframes drawer-in {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.drawer-in { animation: drawer-in .28s cubic-bezier(.2,.8,.2,1) both; }
+
+@keyframes radar-sweep { to { transform: rotate(360deg); } }
+.radar-sweep { animation: radar-sweep 4s linear infinite; }

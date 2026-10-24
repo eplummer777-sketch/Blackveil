@@ -1,0 +1,117 @@
+{
+  "projectId": "72189320",
+  "functions": {
+    "ai-assistant": {
+      "hasChanged": false,
+      "hash": "87af24daeb89aad3ba7a2dd9042211dd8678a74e5de2fc7d8e4c414da5cab8c1a1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "alert-dispatch": {
+      "hasChanged": false,
+      "hash": "3be5f577ebbc1da6f5a858a7d3cddc4a9524068f842af10b33960ee787df317da1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "architect": {
+      "hasChanged": false,
+      "hash": "ee86a739e9c9b587845baed5c1909db2865661a7f6813d72b3ff3af4041fc559a1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "assessment-engine": {
+      "hasChanged": false,
+      "hash": "08d8da490bec069370e0ed18fee332ce00029173dea0309db1fa18aa2e499c0ea1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "assistant-actions": {
+      "hasChanged": false,
+      "hash": "94a0b74b6b7a9b5493946821af583fd0fd17f21adaae0d5f5a94517f9311578ea1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "bv-terminal": {
+      "hasChanged": false,
+      "hash": "4288ce30351494f6ab46adf8172785c4980bbd2988eb26e3423c02352c8f084da1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "bv-worker": {
+      "hasChanged": false,
+      "hash": "539511404fe7963b64840731d5d25f871e5a384601c31d243e7aad8c3ff70361a1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "cloudflare-architect": {
+      "hasChanged": false,
+      "hash": "a7758e12919d47a080c03dd31a9954726cf680292375195bf9986d039d33b5bea1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "endpoint-agent": {
+      "hasChanged": false,
+      "hash": "7f189f46dae7c3364ef6b217f5df61c17863a783cd1d83d0f3bfdc2830f6c5f9a1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "endpoint-control": {
+      "hasChanged": false,
+      "hash": "3eeb38b3dd21087d0cb9e924bb877be596182fb8f09ced451bb024825c534aa6a1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "hostedscan": {
+      "hasChanged": false,
+      "hash": "0481001c8d13eed38b5440a94c9917b9052d96a90ff35a56de66bb570e4c0388a1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "link-scanner": {
+      "hasChanged": false,
+      "hash": "2d242644f989cc3bc0553be961c3b22fc15b8011789aeef1840a1c77de458c4ca1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "monitoring": {
+      "hasChanged": false,
+      "hash": "72abaff9557a87eb3b90cc91351abc39170edd04912b607ec387327f7fa5bf6fa1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "network-scanner": {
+      "hasChanged": false,
+      "hash": "3df2251d108efe7642e75f5bf2d1e65306123db5bfd8f856909cd23c97a09e16a1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "nmap-agent": {
+      "hasChanged": false,
+      "hash": "017af4c9b10b304951818cf129e4bc0b15afcdcfaf574ad0e7059fd3120378eba1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "pentest-engine": {
+      "hasChanged": false,
+      "hash": "7c5a087183cf40338083c38fe224813bb2ea3f0bdcb0beeb9b3fd143b3d1007ea1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "proof-of-breach": {
+      "hasChanged": false,
+      "hash": "b3874179086f522ca4ce4bd899bb4f1dcf2c2b2298c81239ed9f375d169a774da1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "sentinel-ingest": {
+      "hasChanged": false,
+      "hash": "4e07c0f4de5ab7464708ac84a291a62af0d7f2201045f51dca1e9f98575ca4d3a1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "sentinel-manager": {
+      "hasChanged": false,
+      "hash": "2cf63b09c20337d70f215d8d6702737977dc381e941fdc3eec7eae70ff02fc58a1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "stripe-checkout": {
+      "hasChanged": false,
+      "hash": "acc8cdfb924b62ff7436afe1d3ea74a388dfbba6cb0cd651ff2d0a032a9a502da1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "stripe-portal": {
+      "hasChanged": false,
+      "hash": "371606974a8960bfd8ff2e5732eac6cdcd130d1f71d326916d076d6dd3598f5ba1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "stripe-webhook": {
+      "hasChanged": false,
+      "hash": "b2227ce90bb9f598c2f42ffa4562d32dbf56eb6d8863eb1a7467ca804ea8c0c4a1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "threat-analyst": {
+      "hasChanged": false,
+      "hash": "d17296086c340f40ee39d9074d5c1c5c896777f8dc28daf9bc7b506e8690995ba1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "web-builder": {
+      "hasChanged": false,
+      "hash": "3daa20d114a3013ae6dfd558a2226ca2631936c9d1356116fef7763d5b7a7e7ba1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "web-publish": {
+      "hasChanged": false,
+      "hash": "b5a3e66723871a2eb1bc11e4cf1d44a717dab8701625f6f671d56f67ed89b3cfa1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "website-assessment": {
+      "hasChanged": false,
+      "hash": "9d4cc81466ccae8c6154b48e40956e09841d58698ce071974697c622b7434a91a1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "zap-instances": {
+      "hasChanged": false,
+      "hash": "3f0b5ece7c5e670062fd8c3a31f65b21e2f5a41b89737d3309dfce8c6496fa4ba1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    },
+    "zap-scanner": {
+      "hasChanged": false,
+      "hash": "df83e08a4b4a1bda7088f5eeec840f9b13143279fca18d4dea3525c3ddede126a1d3a20cfc305cf57409bc9615a69c20f97fa0365786cc6f53988c06c7837b21"
+    }
+  }
+}

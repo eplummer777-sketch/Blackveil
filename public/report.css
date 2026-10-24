@@ -1,0 +1,17 @@
+body{font-family:Inter,system-ui,Arial,sans-serif;color:#0f172a;background:#fff;margin:0;padding:40px;line-height:1.5}
+.h{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #0e7490;padding-bottom:12px;margin-bottom:24px}
+.brand{font-weight:700;font-size:18px;letter-spacing:.5px}.brand span{color:#0e7490}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:16px 0}
+.stat{border:1px solid #e2e8f0;border-radius:8px;padding:10px;text-align:center}
+.stat b{display:block;font-size:22px}.stat small{color:#64748b;font-size:10px;text-transform:uppercase}
+h2{font-size:16px;margin-top:28px;border-bottom:1px solid #e2e8f0;padding-bottom:6px}
+.finding{border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin:10px 0}
+.fhead{font-weight:600;margin-bottom:6px}
+.sev{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;color:#fff;margin-right:8px}
+.sev.critical{background:#e11d48}.sev.high{background:#ea580c}.sev.medium{background:#d97706}.sev.low{background:#0891b2}.sev.info{background:#64748b}
+.label{font-size:10px;text-transform:uppercase;color:#64748b;margin-top:8px}
+pre{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px;font-size:11px;white-space:pre-wrap;font-family:monospace}
+ul{padding-left:18px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.dot.completed{background:#16a34a}.dot.skipped{background:#94a3b8}.dot.failed{background:#e11d48}
+.meta{color:#475569;font-size:12px;margin-bottom:16px}
+.foot{margin-top:40px;border-top:1px solid #e2e8f0;padding-top:12px;color:#64748b;font-size:11px}
