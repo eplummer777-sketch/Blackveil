@@ -6,11 +6,32 @@ export interface WbProject { id: string; name: string; description: string; kind
 export interface WbMessage { id: string; role: 'user' | 'assistant' | 'system'; content: string; model: string | null; created_at: string }
 export interface WbChangeFile { path: string; action: 'create' | 'update' | 'delete'; before: string | null; after: string | null; renamed_from?: string; renamed_to?: string }
 export interface WbCheck { name: string; ok: boolean; detail: string; warn?: boolean }
+export interface WbRequestAnalysis {
+  goal?: string; original?: string; requirements?: string[]; constraints?: string[]; optional?: string[];
+  unresolved?: string[]; acceptance?: string[];
+}
+export interface WbPlanStep {
+  index: number; text: string; files: string[]; dependsOn: number[]; requirements: string[];
+  acceptance: string[]; status: 'pending' | 'running' | 'done' | 'failed'; attempts: number; note?: string;
+}
+export interface WbRequirementState {
+  id: string; text: string; status: 'pending' | 'in_progress' | 'completed' | 'unresolved' | 'failed';
+  steps: number[]; files: string[]; acceptance: string[]; note?: string;
+}
+export interface WbVerification { performed: string[]; failed: string[]; notPerformed: string[] }
 export interface WbAnalysis {
-  understanding?: string; plan?: string[]; inspected?: string[]; targets?: string[]; creates?: string[];
+  understanding?: string; goal?: string; plan?: string[]; inspected?: string[]; targets?: string[]; creates?: string[];
   batches?: string[][]; next?: number; complete?: boolean; replies?: string[]; notes?: string[];
   context_omitted?: string[]; risks?: string[]; checks?: WbCheck[]; baseline_failed?: string[];
   workflow?: WbWorkflow; causes?: { cause: string; evidence: string; likelihood: string }[]; repairs?: number; awaiting_go?: boolean;
+  /** Requirements the plan did not claim to cover. Shown to the owner and carried into every step. */
+  unresolved?: string[];
+  request_analysis?: WbRequestAnalysis;
+  plan_steps?: WbPlanStep[];
+  requirements_state?: WbRequirementState[];
+  failed_steps?: number[];
+  awaiting_retry?: boolean;
+  verification?: WbVerification;
 }
 export type WbWorkflow = 'ask' | 'explain' | 'plan' | 'code' | 'debug' | 'review';
 export type WbRating = 'helpful' | 'incorrect' | 'incomplete' | 'verified';
@@ -75,6 +96,10 @@ type Generate = (req: LocalAiRequest) => Promise<LocalAiReply>;
 
 // Matches the server's limit: one answer plus at most one repair pass.
 export const MAX_AI_ROUNDS = 2;
+
+// How many writing steps one press runs. A change with more steps pauses here with its progress
+// kept, and the existing "Continue writing" button resumes it. No step is ever dropped.
+export const MAX_STEPS_PER_RUN = 12;
 
 // The server prepares each prompt; Blackveil AI answers on this device; the server validates and stores the result.
 // A reply the server cannot parse triggers one repair prompt, so earlier answers are resent in order.

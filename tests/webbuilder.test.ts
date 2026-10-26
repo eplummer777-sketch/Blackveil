@@ -380,7 +380,7 @@ describe('agent workflow helpers', () => {
     assert.deepEqual(p.creates, ['about.html']);
     assert.deepEqual(p.plan, ['change h1']);
     assert.equal(p.understanding, 'edit title');
-    assert.deepEqual(parseInspectReply('garbage', {}), { reply: '', understanding: '', files: [], targets: [], creates: [], plan: [] });
+    assert.deepEqual(parseInspectReply('garbage', {}), { reply: '', goal: '', understanding: '', files: [], targets: [], creates: [], plan: [], coverage: [], trimmed: [] });
   });
 
   it('verifies applied files against the proposal', () => {

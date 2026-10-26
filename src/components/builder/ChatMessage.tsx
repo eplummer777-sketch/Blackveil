@@ -77,6 +77,9 @@ function Thinking({ change, writing }: { change: WbChange; writing: boolean }) {
   const busy = changeInProgress(change);
   const [open, setOpen] = useState(busy);
   const batches = a.batches ?? [];
+  const reqs = a.request_analysis?.requirements ?? [];
+  const tracked = a.requirements_state ?? [];
+  const unresolved = a.unresolved ?? [];
   const next = a.next ?? batches.length;
   const isOpen = open || busy;
 
@@ -92,6 +95,28 @@ function Thinking({ change, writing }: { change: WbChange; writing: boolean }) {
         <div className="overflow-hidden">
           <div className="px-3 pb-3 space-y-3 text-xs text-slate-400 border-t border-slate-800/80 pt-2.5">
             {a.understanding && <p className="leading-relaxed text-slate-300">{a.understanding}</p>}
+            {!!(tracked.length || reqs.length) && (
+              <div>
+                <div className="mb-1.5 flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-slate-500">Requirements ({tracked.length || reqs.length})</div>
+                <ol className="space-y-1">
+                  {(tracked.length ? tracked.map((t) => ({ text: t.text, status: t.status as string })) : reqs.map((r) => ({ text: r, status: '' }))).map((r, i) => (
+                    <li key={i} className="flex flex-wrap gap-2">
+                      <span className="text-slate-600 tabular-nums">R{i + 1}</span>
+                      <span className="break-words text-slate-300">{r.text}</span>
+                      {r.status && <span className={`rounded-full border px-1.5 text-[10px] ${r.status === 'completed' ? 'border-emerald-500/40 text-emerald-300' : r.status === 'failed' ? 'border-rose-500/40 text-rose-300' : r.status === 'unresolved' ? 'border-amber-500/40 text-amber-300' : 'border-slate-700 text-slate-400'}`}>{r.status}</span>}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+            {!!unresolved.length && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 px-2.5 py-2">
+                <div className="mb-1 text-[11px] uppercase tracking-wider text-amber-300">Not covered by this plan</div>
+                <ul className="list-disc pl-4 space-y-0.5 text-amber-100/90">
+                  {unresolved.map((r, i) => <li key={i} className="break-words">{r}</li>)}
+                </ul>
+              </div>
+            )}
             {!!a.inspected?.length && (
               <div>
                 <div className="mb-1.5 flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-slate-500"><FileSearch size={11} /> Read {a.inspected.length} file{a.inspected.length === 1 ? '' : 's'}</div>
@@ -170,7 +195,9 @@ function Actions({ change, writing, onReview, onContinue }: { change: WbChange; 
         <div className="flex items-center gap-2 px-3 py-2 border-t border-slate-800">
           {busy ? (
             writing ? <span className="flex items-center gap-1.5 text-xs text-cyan-200"><Loader2 size={12} className="animate-spin" /> Writing step {(change.analysis?.next ?? 0) + 1} of {change.analysis?.batches?.length ?? 1}…</span>
-              : <button onClick={onContinue} className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-500 px-3 py-1.5 text-xs font-medium text-veil-950 hover:bg-cyan-400 transition"><Play size={12} /> {change.analysis?.awaiting_go ? 'Write changes' : 'Continue writing'}</button>
+              : change.analysis?.awaiting_retry
+                ? <button onClick={onContinue} className="inline-flex items-center gap-1.5 rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-medium text-veil-950 hover:bg-amber-300 transition"><Play size={12} /> Retry step {(change.analysis?.next ?? 0) + 1}</button>
+                : <button onClick={onContinue} className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-500 px-3 py-1.5 text-xs font-medium text-veil-950 hover:bg-cyan-400 transition"><Play size={12} /> {change.analysis?.awaiting_go ? 'Write changes' : 'Continue writing'}</button>
           ) : (
             <>
               <span className="text-[11px] text-slate-500">Nothing is saved until you approve.</span>

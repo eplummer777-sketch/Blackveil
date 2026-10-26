@@ -2,6 +2,7 @@ import { validatePath, verifyAppliedFiles, type FileMap } from "../_lib/webbuild
 import { buildIndex, checkConsistency } from "../_lib/projectIndex.ts";
 import type { ChangeFile } from "../_lib/changeset.ts";
 import type { Analysis } from "./agent.ts";
+import { appliedRequirementStates } from "../_lib/taskPlan.ts";
 import { learnFromApplied } from "./learning.ts";
 import { syntaxCheck } from "../_lib/syntax.ts";
 import { ensureSize, HttpError, loadFiles, loadProject, must, path, replaceAllFiles, snapshot, str, uuid, writeFiles, type Body, type Svc } from "./store.ts";
@@ -49,9 +50,19 @@ export async function applyChange(svc: Svc, body: Body) {
     .map((c) => (!c.ok && before.has(c.name) ? { ...c, detail: `${c.detail} (already failing before this change)` } : c));
   const failing = checks.filter((c) => !c.ok && !c.warn);
   const summary = ch.files.map((f) => `${f.renamed_from ? `renamed ${f.renamed_from} ->` : f.action} ${f.path}`).join(", ");
+  // Requirements are recorded as completed only now, from files that were really written. The model
+  // claiming a requirement is done never sets this.
+  let requirementNote = "";
+  if (a.requirements_state?.length && a.plan_steps?.length) {
+    const state = appliedRequirementStates(a.requirements_state, a.plan_steps, ch.files.filter((f) => f.after !== null).map((f) => f.path));
+    const completed = state.filter((s) => s.status === "completed").length;
+    const failed = state.filter((s) => s.status === "failed").length;
+    requirementNote = ` Requirements: ${completed} completed, ${failed} not completed${state.some((s) => s.status === "unresolved") ? `, ${state.filter((s) => s.status === "unresolved").length} unresolved` : ""}. Completed means its files were applied; nothing was rendered or tested in a browser.`;
+    await must(svc.from("wb_changes").update({ analysis: { ...a, requirements_state: state } }).eq("id", id));
+  }
   await must(svc.from("wb_messages").insert({
     project_id: ch.project_id, role: "system",
-    content: `Applied ${ch.files.length} file change(s): ${summary}. Checkpoint saved. Re-read checks: ${checks.length - failing.length}/${checks.length} passed${failing.length ? " (" + failing.map((c) => `${c.name}: ${c.detail}`).join("; ") + ")" : ""}. Nothing was built or executed.`,
+    content: `Applied ${ch.files.length} file change(s): ${summary}. Checkpoint saved. Re-read checks: ${checks.length - failing.length}/${checks.length} passed${failing.length ? " (" + failing.map((c) => `${c.name}: ${c.detail}`).join("; ") + ")" : ""}.${requirementNote} Nothing was built or executed.`,
   }));
   try {
     await learnFromApplied(svc, ch.project_id, id, a, ch.files, stored);

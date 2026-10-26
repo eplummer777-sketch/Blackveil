@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      "@supabase/supabase-js": ["./node_modules/@supabase/supabase-js"],
+      "npm:@supabase/supabase-js@2.57.4": ["./node_modules/@supabase/supabase-js"]
+    }
+  },
+  "include": [
+    "supabase/functions/deno-shim.d.ts",
+    "supabase/functions/_lib/intent.ts",
+    "supabase/functions/_lib/taskPlan.ts",
+    "supabase/functions/_lib/webbuilder.ts",
+    "supabase/functions/_lib/changeset.ts",
+    "supabase/functions/_lib/projectIndex.ts",
+    "supabase/functions/_lib/memory.ts",
+    "supabase/functions/_lib/syntax.ts",
+    "supabase/functions/_lib/localModels.ts",
+    "supabase/functions/web-builder/ai.ts",
+    "supabase/functions/web-builder/calls.ts",
+    "supabase/functions/web-builder/store.ts",
+    "supabase/functions/web-builder/agent.ts",
+    "supabase/functions/web-builder/changes.ts",
+    "supabase/functions/web-builder/learning.ts"
+  ]
+}

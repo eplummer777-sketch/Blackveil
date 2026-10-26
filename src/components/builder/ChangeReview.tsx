@@ -63,6 +63,9 @@ export function ChangeReview({ change, progress, onClose, onApply, onReject, onC
   const [open, setOpen] = useState<Set<string>>(() => new Set(change.files.length <= 3 ? change.files.map((f) => f.path) : []));
   const [result, setResult] = useState<WbCheck[] | null>(null);
   const a = change.analysis ?? {};
+  const requirements = a.requirements_state ?? [];
+  const unresolved = a.unresolved ?? [];
+  const verification = a.verification;
   const risks = a.risks ?? [];
   const pending = change.status === 'pending';
   const working = changeInProgress(change);
@@ -106,10 +109,34 @@ export function ChangeReview({ change, progress, onClose, onApply, onReject, onC
           </div>
         )}
 
+        {requirements.length > 0 && (
+          <section>
+            <h3 className="text-xs uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5"><ListChecks size={13} /> Requirements ({requirements.length})</h3>
+            <ol className="space-y-1 text-sm text-slate-300">
+              {requirements.map((r) => (
+                <li key={r.id} className="flex flex-wrap gap-2">
+                  <span className="text-slate-600 tabular-nums shrink-0">{r.id}</span>
+                  <span className="break-words">{r.text}</span>
+                  <span className={`ml-auto shrink-0 rounded-full border px-1.5 text-[10px] ${r.status === 'completed' ? 'border-emerald-500/40 text-emerald-300' : r.status === 'failed' ? 'border-rose-500/40 text-rose-300' : r.status === 'unresolved' ? 'border-amber-500/40 text-amber-300' : r.status === 'in_progress' ? 'border-cyan-500/40 text-cyan-300' : 'border-slate-700 text-slate-400'}`}>{r.status}</span>
+                  {r.note && <span className="w-full text-[11px] text-slate-500">{r.note}</span>}
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
         {!!a.plan?.length && (
           <section>
             <h3 className="text-xs uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5"><ListChecks size={13} /> Plan</h3>
             <ol className="list-decimal list-inside space-y-1 text-sm text-slate-300">{a.plan.map((s, i) => <li key={i}>{s}</li>)}</ol>
+          </section>
+        )}
+
+        {unresolved.length > 0 && (
+          <section className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4">
+            <h3 className="text-sm font-medium text-amber-100 flex items-center gap-2 mb-2"><AlertTriangle size={15} /> Not covered by this plan</h3>
+            <p className="text-xs text-amber-100/70 mb-2">The plan did not claim to satisfy these. Nothing here says they are done.</p>
+            <ul className="list-disc list-inside space-y-1 text-sm text-amber-100/90">{unresolved.map((r) => <li key={r}>{r}</li>)}</ul>
           </section>
         )}
 
@@ -118,7 +145,7 @@ export function ChangeReview({ change, progress, onClose, onApply, onReject, onC
             <span className="text-sm text-cyan-100">
               {progress ?? `The AI has written ${a.next ?? 0} of ${totalSteps} step(s). The rest has not been generated yet.`}
             </span>
-            {!progress && <Button size="sm" className="ml-auto" onClick={() => run('continue', onContinue)} loading={busy === 'continue'}><Play size={14} /> Continue writing</Button>}
+            {!progress && <Button size="sm" className="ml-auto" onClick={() => run('continue', onContinue)} loading={busy === 'continue'}><Play size={14} /> {a.awaiting_retry ? `Retry step ${(a.next ?? 0) + 1}` : 'Continue writing'}</Button>}
           </div>
         )}
 
@@ -133,6 +160,30 @@ export function ChangeReview({ change, progress, onClose, onApply, onReject, onC
         )}
 
         {ready && !result && a.checks && <CheckList title="Checks on the proposed result" checks={a.checks.map((c) => (!c.ok && a.baseline_failed?.includes(c.name) ? { ...c, detail: `${c.detail} (already failing before)` } : c))} />}
+
+        {verification && (
+          <section className="rounded-xl border border-slate-800 p-4 space-y-3">
+            <h3 className="text-xs uppercase tracking-wider text-slate-500">Verification</h3>
+            {verification.performed.length > 0 && (
+              <div>
+                <p className="text-xs text-emerald-300 mb-1">Checks actually performed</p>
+                <ul className="list-disc list-inside space-y-0.5 text-sm text-slate-300">{verification.performed.map((v) => <li key={v}>{v}</li>)}</ul>
+              </div>
+            )}
+            {verification.failed.length > 0 && (
+              <div>
+                <p className="text-xs text-rose-300 mb-1">Verification problems</p>
+                <ul className="list-disc list-inside space-y-0.5 text-sm text-rose-200">{verification.failed.map((v) => <li key={v}>{v}</li>)}</ul>
+              </div>
+            )}
+            {verification.notPerformed.length > 0 && (
+              <div>
+                <p className="text-xs text-slate-400 mb-1">Not checked here</p>
+                <ul className="list-disc list-inside space-y-0.5 text-sm text-slate-400">{verification.notPerformed.map((v) => <li key={v}>{v}</li>)}</ul>
+              </div>
+            )}
+          </section>
+        )}
 
         {!!a.notes?.length && (
           <section>

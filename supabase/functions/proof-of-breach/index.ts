@@ -14,7 +14,7 @@ const VERIFY_DAYS = 90;
 const TOOLS = [
   { name: TOOL, version: TOOL_VERSION, status: "connected", detail: "Powers the Web Scanner: read-only HTTP/TLS/DNS checks on verified targets, with SSRF guards." },
   { name: "Blackveil Discovery", version: "1.0", status: "connected", detail: "Powers Network Scan: host, open-port and service discovery on verified domains and admin-approved ranges, analyzed by Proof-of-Breach AI." },
-  { name: "Blackveil Pentest Engine", version: "1.0", status: "connected", detail: "Native non-destructive penetration testing on verified targets. Findings are explained by Proof-of-Breach AI." },
+  { name: "Blackveil Pentest Engine", version: "1.0", status: "connected", detail: "Native non-destructive penetration testing: baseline reconnaissance on any public domain, active checks only on verified targets or recorded authorizations. Findings are explained by Proof-of-Breach AI." },
   { name: "Blackveil Engine", version: "1.0", status: "connected", detail: "Built-in web crawler with passive security checks and content discovery on verified targets. Installed on the server; no screen launches it yet." },
 ];
 

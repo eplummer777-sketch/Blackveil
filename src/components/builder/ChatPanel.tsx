@@ -155,7 +155,7 @@ export function ChatPanel({ messages, changes, feedback, aiTokens, pending, writ
           ))}
         </div>
         <div className={`rounded-2xl border bg-veil-950/70 transition focus-within:border-cyan-500/50 focus-within:shadow-[0_0_0_3px_rgba(34,211,238,0.08)] ${aiConnected ? 'border-slate-700' : 'border-slate-800 opacity-70'}`}>
-          <textarea ref={inputRef} value={text} onChange={(e) => setText(e.target.value)} rows={2} maxLength={8000} disabled={!aiConnected}
+          <textarea ref={inputRef} value={text} onChange={(e) => setText(e.target.value)} rows={2} maxLength={12000} disabled={!aiConnected}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
             placeholder={aiConnected ? 'How can Blackveil AI help you today?' : 'Start Blackveil AI to begin chatting'}
             className="block w-full resize-none bg-transparent px-3.5 pt-3 pb-1 text-[13.5px] leading-relaxed text-slate-100 placeholder:text-slate-500 focus:outline-none disabled:cursor-not-allowed" />

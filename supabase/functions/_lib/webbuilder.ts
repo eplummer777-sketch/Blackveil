@@ -4,7 +4,9 @@ export const LIMITS = {
   maxProjectChars: 2_000_000,
   maxSnapshots: 30,
   contextChars: 60_000,
-  maxPromptChars: 8_000,
+  // One request must fit the on-device model's 8k-token window together with the project context.
+  // A message over this length is refused with an explanation, never shortened silently.
+  maxPromptChars: 12_000,
 };
 
 export interface OwnerConfig {
@@ -76,37 +78,66 @@ export type ProposedFile =
   | { path: string; action: "patch"; edits: PatchEdit[] };
 
 export const MAX_CHANGES_PER_REPLY = 60;
+// A full-file rewrite larger than this is more likely to be a cut-off reply than a real file.
+// Larger files must be changed with targeted "patch" edits instead.
+export const FULL_FILE_MAX_CHARS = 8_000;
 
-export function parseAiReply(raw: string): { reply: string; notes: string; changes: ProposedFile[]; error?: string } {
+export interface ParsedChangeSet {
+  reply: string;
+  notes: string;
+  changes: ProposedFile[];
+  /** Entries that were refused, and why. Shown to the owner instead of disappearing. */
+  dropped: string[];
+  error?: string;
+}
+
+export function parseAiReply(raw: string): ParsedChangeSet {
   const o = extractJson(raw);
-  if (!o) return { reply: raw.trim(), notes: "", changes: [], error: "AI reply was not a valid change set." };
+  if (!o) return { reply: raw.trim(), notes: "", changes: [], dropped: [], error: "AI reply was not a valid change set." };
   const reply = typeof o.reply === "string" ? o.reply : "";
   const notes = typeof o.notes === "string" ? o.notes.slice(0, 2000) : "";
   const list = Array.isArray(o.changes) ? o.changes : [];
+  const dropped: string[] = [];
+  if (list.length > MAX_CHANGES_PER_REPLY) {
+    dropped.push(`${list.length - MAX_CHANGES_PER_REPLY} more change(s) than one reply may contain were left out`);
+  }
   const changes: ProposedFile[] = [];
   const seen = new Set<string>();
   for (const item of list.slice(0, MAX_CHANGES_PER_REPLY)) {
     const c = (item ?? {}) as Record<string, unknown>;
     const v = validatePath(c.path);
-    if (!v.ok || seen.has(v.path)) continue;
+    if (!v.ok) { dropped.push(`An entry with an unusable path was ignored (${v.error}).`); continue; }
+    if (seen.has(v.path)) { dropped.push(`A second change for ${v.path} in the same reply was ignored.`); continue; }
     const content = typeof c.content === "string" && c.content.length <= LIMITS.maxFileChars ? c.content : undefined;
     if (c.action === "delete") changes.push({ path: v.path, action: "delete" });
-    else if ((c.action === "create" || c.action === "update") && content !== undefined) changes.push({ path: v.path, action: c.action, content });
-    else if (c.action === "rename") {
+    else if (c.action === "create" || c.action === "update") {
+      if (content === undefined) {
+        dropped.push(`${v.path} was skipped: the reply had no file content for it.`);
+        continue;
+      }
+      if (content.length > FULL_FILE_MAX_CHARS) {
+        dropped.push(`${v.path} was skipped: a ${content.length}-character full-file rewrite is over the ${FULL_FILE_MAX_CHARS}-character limit for one reply. Ask for smaller, targeted edits to this file instead.`);
+        continue;
+      }
+      changes.push({ path: v.path, action: c.action, content });
+    } else if (c.action === "rename") {
       const from = validatePath(c.from);
-      if (!from.ok || from.path === v.path) continue;
+      if (!from.ok || from.path === v.path) { dropped.push(`A rename with an unusable source path was ignored.`); continue; }
       changes.push(content === undefined ? { path: v.path, action: "rename", from: from.path } : { path: v.path, action: "rename", from: from.path, content });
     } else if (c.action === "patch" && Array.isArray(c.edits)) {
-      const edits = c.edits.slice(0, 80)
+      const edits = (c.edits as unknown[]).slice(0, 80)
         .map((e) => (e ?? {}) as Record<string, unknown>)
         .filter((e) => typeof e.find === "string" && e.find !== "" && typeof e.replace === "string")
         .map((e) => ({ find: e.find as string, replace: e.replace as string }));
-      if (!edits.length) continue;
+      if (!edits.length) { dropped.push(`${v.path} was skipped: its patch had no usable find/replace pair.`); continue; }
       changes.push({ path: v.path, action: "patch", edits });
-    } else continue;
+    } else {
+      dropped.push(`${v.path} was skipped: "${String(c.action)}" is not a change this builder can make.`);
+      continue;
+    }
     seen.add(v.path);
   }
-  return { reply: reply || (changes.length ? "Proposed changes are ready for review." : raw.trim()), notes, changes };
+  return { reply: reply || (changes.length ? "Proposed changes are ready for review." : raw.trim()), notes, changes, dropped };
 }
 
 export function extractJson(raw: string): Record<string, unknown> | null {
@@ -122,20 +153,51 @@ export function extractJson(raw: string): Record<string, unknown> | null {
   }
 }
 
-export interface InspectPlan { reply: string; understanding: string; files: string[]; targets: string[]; creates: string[]; plan: string[] }
+export interface InspectPlan {
+  reply: string;
+  goal: string;
+  understanding: string;
+  files: string[];
+  targets: string[];
+  creates: string[];
+  plan: string[];
+  /** One row per requirement the planner claims to cover, matched by the R-number ids it was given. */
+  coverage: { requirement: string; covered_by: string }[];
+  /** Anything the parser had to shorten, so the app can say so instead of cutting quietly. */
+  trimmed: string[];
+}
 
-export function parseInspectReply(raw: string, existing: FileMap, maxFiles = 60): InspectPlan {
+const inspectCoverage = (v: unknown): { requirement: string; covered_by: string }[] => {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((r) => (r ?? {}) as Record<string, unknown>)
+    .filter((r) => typeof r.requirement === "string")
+    .map((r) => ({
+      requirement: String(r.requirement).trim(),
+      covered_by: typeof r.covered_by === "string" ? r.covered_by.trim() : "",
+    }))
+    .filter((r) => r.requirement !== "");
+};
+
+export function parseInspectReply(raw: string, existing: FileMap, maxFiles = 100): InspectPlan {
   const o = extractJson(raw) ?? {};
-  const understanding = typeof o.understanding === "string" ? o.understanding.slice(0, 1000) : "";
+  const trimmed: string[] = [];
+  const cut = (label: string, value: string, max: number) => {
+    if (value.length > max) trimmed.push(`${label} shortened from ${value.length} to ${max} characters`);
+    return value.slice(0, max);
+  };
+  const understanding = cut("understanding", typeof o.understanding === "string" ? o.understanding : "", 2_000);
+  const goal = cut("goal", typeof o.goal === "string" ? o.goal : "", 600);
   const pick = (v: unknown) => [...new Set((Array.isArray(v) ? v : []).filter((p): p is string => typeof p === "string" && p in existing))];
   const files = pick(o.files_to_inspect).slice(0, maxFiles);
   const targets = pick(o.files_to_change).slice(0, maxFiles);
   const creates = [...new Set((Array.isArray(o.files_to_create) ? o.files_to_create : [])
-    .map((p) => validatePath(p)).filter((r): r is { ok: true; path: string } => r.ok && !(r.path in existing)).map((r) => r.path))].slice(0, 30);
-  const plan = (Array.isArray(o.plan) ? o.plan : [])
-    .filter((s): s is string => typeof s === "string" && s.trim() !== "").map((s) => s.slice(0, 300)).slice(0, 20);
-  const reply = typeof o.reply === "string" ? o.reply.trim().slice(0, 2000) : "";
-  return { reply, understanding, files, targets, creates, plan };
+    .map((p) => validatePath(p)).filter((r): r is { ok: true; path: string } => r.ok && !(r.path in existing)).map((r) => r.path))].slice(0, 60);
+  const rawPlan = (Array.isArray(o.plan) ? o.plan : []).filter((s): s is string => typeof s === "string" && s.trim() !== "");
+  if (rawPlan.length > 40) trimmed.push(`plan shortened from ${rawPlan.length} to 40 steps`);
+  const plan = rawPlan.slice(0, 40).map((s) => cut("a plan step", s, 600));
+  const reply = cut("answer", typeof o.reply === "string" ? o.reply.trim() : "", 8_000);
+  return { reply, goal, understanding, files, targets, creates, plan, coverage: inspectCoverage(o.requirement_coverage), trimmed };
 }
 
 export interface VerifyCheck { name: string; ok: boolean; detail: string; warn?: boolean }

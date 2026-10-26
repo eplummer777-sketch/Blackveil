@@ -1,5 +1,6 @@
 import type { FileMap, PatchEdit, ProposedFile } from "./webbuilder.ts";
 import { findSecrets, kindOf, REDACTED } from "./projectIndex.ts";
+import { syntaxProblem } from "./syntax.ts";
 
 export interface ChangeFile {
   path: string;
@@ -36,8 +37,17 @@ export function mergeProposals(original: FileMap, existing: ChangeFile[], propos
   for (const f of existing) meta.set(f.path, { renamed_from: f.renamed_from, renamed_to: f.renamed_to });
   const notes: string[] = [];
   const protectedPath = (p: string) => kindOf(p) === "env";
-  const write = (p: string, content: string) => {
+  // A full-file write must be structurally complete before it can replace a working file. This is the
+  // guard against a cut-off model reply silently overwriting a file with half of its content.
+  const write = (p: string, content: string, fullFile = false) => {
     if (content.includes(REDACTED)) { notes.push(`Skipped ${p}: it would have replaced a hidden secret with a placeholder.`); return false; }
+    if (fullFile) {
+      const problem = syntaxProblem(p, content);
+      if (problem) {
+        notes.push(`Skipped ${p}: the proposed content looks cut off (${problem}). The existing file was left untouched; ask for a smaller, targeted edit.`);
+        return false;
+      }
+    }
     work[p] = content;
     return true;
   };
@@ -52,12 +62,12 @@ export function mergeProposals(original: FileMap, existing: ChangeFile[], propos
       if (c.path === "index.html" && projectKind !== "other") { notes.push("Refused to delete index.html: the site needs it."); continue; }
       delete work[c.path];
     } else if (c.action === "create" || c.action === "update") {
-      write(c.path, c.content);
+      write(c.path, c.content, true);
     } else if (c.action === "rename") {
       if (!(c.from in work)) { notes.push(`Skipped rename of ${c.from}: file not found.`); continue; }
       if (c.path in work) { notes.push(`Skipped rename to ${c.path}: a file with that name already exists.`); continue; }
       if (c.from === "index.html" && projectKind !== "other") { notes.push("Refused to rename index.html: the site needs it."); continue; }
-      if (!write(c.path, c.content ?? work[c.from])) continue;
+      if (!write(c.path, c.content ?? work[c.from], c.content !== undefined)) continue;
       delete work[c.from];
       meta.set(c.path, { renamed_from: c.from });
       meta.set(c.from, { renamed_to: c.path });
@@ -65,7 +75,8 @@ export function mergeProposals(original: FileMap, existing: ChangeFile[], propos
       if (!(c.path in work)) { notes.push(`Skipped edits to ${c.path}: file not found.`); continue; }
       const r = applyPatch(work[c.path], c.edits);
       if ("error" in r) { notes.push(`Skipped edits to ${c.path}: ${r.error}. Ask the AI to retry this file.`); continue; }
-      write(c.path, r.content);
+      // The patched result is only accepted when the file is still structurally complete.
+      write(c.path, r.content, true);
     }
   }
 

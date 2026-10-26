@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, ErrorBanner, Spinner } from '@/components/ui';
 import { useLocalAi, type LocalAiRequest } from '@/lib/localAi/LocalAiContext';
-import { wb, wbWithAi, errText, changeInProgress, WbApplyResult, WbChange, WbCheck, WbProjectData, type WbRating, type WbWorkflow } from '@/lib/builder';
+import { wb, wbWithAi, errText, changeInProgress, MAX_STEPS_PER_RUN, WbApplyResult, WbChange, WbCheck, WbProjectData, type WbRating, type WbWorkflow } from '@/lib/builder';
 import { MemoryDrawer } from '@/components/builder/MemoryDrawer';
 import { Preview } from '@/components/builder/Preview';
 import { ChatPanel } from '@/components/builder/ChatPanel';
@@ -68,8 +68,11 @@ export function Workspace({ projectId, onAiSettings }: {
   async function writeSteps(start: WbChange) {
     let ch = start;
     setWritingId(ch.id);
+    let written = 0;
     try {
-      while (changeInProgress(ch)) {
+      // One press writes at most MAX_STEPS_PER_RUN steps; a longer change pauses with everything
+      // kept and the existing "Continue writing" button resumes it. A failed step stops the run.
+      while (changeInProgress(ch) && written < MAX_STEPS_PER_RUN) {
         const total = ch.analysis?.batches?.length ?? 0;
         setProgress(`Writing step ${(ch.analysis?.next ?? 0) + 1} of ${total}…`);
         const cur = ch;
@@ -77,6 +80,8 @@ export function Workspace({ projectId, onAiSettings }: {
         setReview((r) => (r && r.id === cur.id ? cur : r));
         const r = await wbWithAi<{ change: WbChange }>('continue_change', { change_id: ch.id }, think);
         ch = r.change;
+        written++;
+        if (ch.analysis?.awaiting_retry) break;
       }
     } finally {
       setWritingId(null);

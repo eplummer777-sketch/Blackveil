@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
-    "test": "node --experimental-strip-types --no-warnings --test tests/sentinel.test.ts tests/architect.test.ts tests/assessment-engine.test.ts tests/payments.test.ts tests/endpoint.test.ts tests/push.test.ts tests/proof-of-breach.test.ts tests/zap.test.ts tests/zap-instances.test.ts tests/nmap.test.ts tests/zap-engine.test.ts tests/pentest.test.ts tests/native-discovery.test.ts tests/tls-auditor.test.ts tests/bvos.test.ts tests/webbuilder.test.ts tests/white-screen.test.ts && node --experimental-transform-types --no-warnings --test tests/pipeline-e2e.test.ts"
+    "typecheck:functions": "tsc --noEmit -p tsconfig.functions.json",
+    "test": "node --experimental-strip-types --no-warnings --test tests/sentinel.test.ts tests/architect.test.ts tests/assessment-engine.test.ts tests/payments.test.ts tests/endpoint.test.ts tests/push.test.ts tests/proof-of-breach.test.ts tests/zap.test.ts tests/zap-instances.test.ts tests/nmap.test.ts tests/zap-engine.test.ts tests/pentest.test.ts tests/pentest-target.test.ts tests/native-discovery.test.ts tests/tls-auditor.test.ts tests/bvos.test.ts tests/webbuilder.test.ts tests/builder-intent.test.ts tests/builder-execution.test.ts tests/webbuilder-execution.test.ts tests/white-screen.test.ts && node --experimental-transform-types --no-warnings --test tests/pipeline-e2e.test.ts"
   },
   "dependencies": {
     "@mlc-ai/web-llm": "^0.2.86",
